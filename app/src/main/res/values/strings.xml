@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">ObuClient</string>
+    <string name="choice_plan">方案:</string>
+    <string name="plan_1">A:自车速度+本车间距+本车时距</string>
+    <string name="plan_2">B:前5辆车平均速度</string>
+    <string name="plan_3">C:自车速度+前5辆车平均速度+行驶建议</string>
+    <string name="plan_4">D:前5辆车平均速度+前5辆车平均间距</string>
+    <string name="plan_5">E:自车速度+前n辆车平均速度+前m辆车平均间距+前k辆车平均时距+行驶建议</string>
+    <string name="plan_6">F:前5辆车在30秒内的平均速度</string>
+    <string name="show">显示</string>
+    <string name="hide">已隐藏</string>
+    <string name="refresh_rate">刷新频率</string>
+    <string name="vioce">语音</string>
+    <string name="rate_0">0Hz</string>
+    <string name="rate_1">1Hz</string>
+    <string name="rate_2">1/5Hz</string>
+    <string name="rate_3">1/10Hz</string>
+    <string name="rate_4">1/20Hz</string>
+    <string name="rate_5">1/30Hz</string>
+    <string name="rate_6">1/40Hz</string>
+    <string name="rate_7">1/50Hz</string>
+    <string name="rate_8">1/60Hz</string>
+    <string name="unit">KM/H</string>
+    <string name="isLock">上锁状态</string>
+    <string name="setting">参数设置NKM、T</string>
+    <string name="carDistance">本车间距：</string>
+    <string name="carTimeDiff">本车时距：</string>
+    <string name="carAveSpeed_5">前5辆车平均速度：</string>
+    <string name="dirverAdvise">行驶建议：</string>
+    <string name="carAveDistance_5">前5辆车平均间距：</string>
+    <string name="carAveTiemDiff_k">前K辆车平均时距：</string>
+    <string name="carAveSpeed_30">前5辆车在30秒内平均速度：</string>
+</resources>
