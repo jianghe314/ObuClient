@@ -404,10 +404,12 @@ class MainActivity : ComponentActivity(){
                     .padding(10.dp)) {
                     if(show){
                         SpeedContent(myCarSpeed)
-                        GetMyCarDistance("本车间距：", "${myCarDis}m")
-                        GetMyCarDistance("本车时距：", "${myCarTime}s")
+                        val dis = "%.1f".format(myCarDis)
+                        val time = "%.1f".format(myCarTime)
+                        GetMyCarDistance("本车间距：", "${dis}m")
+                        GetMyCarDistance("本车时距：", "${time}s")
                         if(isVoice){
-                            TTSUtil.speech("本车间距、时距分别为${myCarDis}、${myCarTime}")
+                            TTSUtil.speech("本车间距、时距分别为${dis}、${time}")
                         }
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){
@@ -426,9 +428,10 @@ class MainActivity : ComponentActivity(){
                     .background(Color.White)
                     .padding(10.dp)) {
                     if(show){
-                        GetMyCarDistance("前5辆车平均速度：","${avgFiveSpeeds}KM/H")
+                        val speed = "%.1f".format(avgFiveSpeeds)
+                        GetMyCarDistance("前5辆车平均速度：","${speed}KM/H")
                         if(isVoice){
-                            TTSUtil.speech("前5辆车平均速度${avgFiveSpeeds}")
+                            TTSUtil.speech("前5辆车平均速度${speed}")
                         }
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){
@@ -449,11 +452,12 @@ class MainActivity : ComponentActivity(){
                     .padding(10.dp)) {
                     if(show){
                         SpeedContent(myCarSpeed)
-                        GetMyCarDistance("前5辆车平均速度：","${avgFiveSpeeds}KM/H")
+                        val speed = "%.1f".format(avgFiveSpeeds)
+                        GetMyCarDistance("前5辆车平均速度：","${speed}KM/H")
                         val advise = getDirverAdvise(myCarSpeed,myCarAccSpeed,myCarTime,myCarSpeed0)
                         DirverAdvise(advise)
                         if(isVoice){
-                            TTSUtil.speech("前5辆车平均速度${avgFiveSpeeds}、行驶建议${advise}")
+                            TTSUtil.speech("前5辆车平均速度${speed}、行驶建议${advise}")
                         }
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){
@@ -474,10 +478,12 @@ class MainActivity : ComponentActivity(){
                     .background(Color.White)
                     .padding(10.dp)) {
                     if(show){
-                        GetMyCarDistance("前5辆车平均速度：","${avgFiveSpeeds}KM/H")
-                        GetMyCarDistance("前5辆车平均间距：","${avgFiveDis}m")
+                        val speed = "%.1f".format(avgFiveSpeeds)
+                        val dis = "%.1f".format(avgFiveDis)
+                        GetMyCarDistance("前5辆车平均速度：","${speed}KM/H")
+                        GetMyCarDistance("前5辆车平均间距：","${dis}m")
                         if(isVoice){
-                            TTSUtil.speech("前5辆车平均车速、平均间距分别为${avgFiveSpeeds}、${avgFiveSpeeds}")
+                            TTSUtil.speech("前5辆车平均车速、平均间距分别为${speed}、${dis}")
                         }
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){
@@ -497,13 +503,16 @@ class MainActivity : ComponentActivity(){
                     .padding(10.dp)) {
                     if(show){
                         SpeedContent(myCarSpeed)
-                        GetMyCarDistance("前N辆车平均速度：","${avgNSpeeds}KM/H")
-                        GetMyCarDistance("前M辆车平均间距：","${avgNDis}m")
-                        GetMyCarDistance("前K辆车平均时距：","${avgNTime}s")
+                        val nSpeed = "%.1f".format(avgNSpeeds)
+                        val nDis = "%.1f".format(avgNDis)
+                        val nTime = "%.1f".format(avgNTime)
+                        GetMyCarDistance("前N辆车平均速度：","${nSpeed}KM/H")
+                        GetMyCarDistance("前M辆车平均间距：","${nDis}m")
+                        GetMyCarDistance("前K辆车平均时距：","${nTime}s")
                         val advise = getDirverAdvise(myCarSpeed,myCarAccSpeed,myCarTime,myCarSpeed0)
                         DirverAdvise(advise)
                         if(isVoice){
-                            TTSUtil.speech("前${nkm}辆车平均速度、间距、时距分别为${avgNSpeeds}、${avgNDis}、${avgNTime}、行驶建议${advise}")
+                            TTSUtil.speech("前${nkm}辆车平均速度、间距、时距分别为${nSpeed}、${nDis}、${nTime}、行驶建议${advise}")
                         }
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){
@@ -522,10 +531,10 @@ class MainActivity : ComponentActivity(){
                     .background(Color.White)
                     .padding(10.dp)) {
                     if(show){
-                        val a = 0
-                        GetMyCarDistance("前5辆车在30秒内平均速度：","${avgFiveSpeeds}KM/H")
+                        val speed = "%.1f".format(avgFiveSpeeds)
+                        GetMyCarDistance("前5辆车在30秒内平均速度：","${speed}KM/H")
                         if(isVoice){
-                            TTSUtil.speech("前5辆车在30秒内平均速度${avgFiveSpeeds}千米每小时")
+                            TTSUtil.speech("前5辆车在30秒内平均速度${speed}千米每小时")
                         }
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){

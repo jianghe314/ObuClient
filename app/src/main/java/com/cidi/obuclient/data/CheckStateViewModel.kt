@@ -171,6 +171,7 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
                     timeList.add(avgTime*1.0f)
                     Log.e("UDP","avgTime--->${avgTime}")
                 }
+                Log.e("UDP","timeStemp--->${System.currentTimeMillis()}")
                 myData = ReceiveData(
                     carNum = num*1,
                     carSpeed = speed*0.01f,
