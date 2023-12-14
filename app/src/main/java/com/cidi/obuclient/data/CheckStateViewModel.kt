@@ -38,13 +38,15 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
     //OBU data实体
     var obuData = MutableLiveData<ReceiveData>()
 
+    var avgSpeedList30 = ArrayList<Float>()
+
     private  var isWork: Boolean = false;
     companion object{
         private var currentTime = 0L
         private lateinit var byteBuffer: ByteBuffer
-        private  var speedLists = ArrayList<Float>()
-        private  var disLists = ArrayList<Float>()
-        private  var timeList = ArrayList<Float>()
+        private var speedLists = ArrayList<Float>()
+        private var disLists = ArrayList<Float>()
+        private var timeList = ArrayList<Float>()
         private lateinit var myData: ReceiveData
     }
 
@@ -154,21 +156,21 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
                 //解析平均速度
                 speedLists.clear()
                 for (i in 1..9){
-                    val avgSpeed = byteBuffer.getShort()
+                    val avgSpeed = byteBuffer.short
                     speedLists.add(avgSpeed*0.01f)
                     Log.e("UDP","avgSpeed--->${avgSpeed}")
                 }
                 //解析平均距离
                 disLists.clear()
                 for (i in 1..9){
-                    val avgDis = byteBuffer.getShort()
-                    disLists.add(avgDis*1.0f)
+                    val avgDis = byteBuffer.short
+                    disLists.add(avgDis*0.01f)
                     Log.e("UDP","avgDis--->${avgDis}")
                 }
                 //解析平均时距
                 for(i in 1..9){
-                    val avgTime = byteBuffer.getShort()
-                    timeList.add(avgTime*1.0f)
+                    val avgTime = byteBuffer.short
+                    timeList.add(avgTime*0.1f)
                     Log.e("UDP","avgTime--->${avgTime}")
                 }
                 Log.e("UDP","timeStemp--->${System.currentTimeMillis()}")

@@ -531,7 +531,16 @@ class MainActivity : ComponentActivity(){
                     .background(Color.White)
                     .padding(10.dp)) {
                     if(show){
-                        val speed = "%.1f".format(avgFiveSpeeds)
+                        if(checkStateViewModel.avgSpeedList30.size == 30){
+                            checkStateViewModel.avgSpeedList30.removeAt(0)
+                        }
+                        checkStateViewModel.avgSpeedList30.add(avgFiveSpeeds)
+                        var sum = 0.0f
+                        for(item in checkStateViewModel.avgSpeedList30){
+                            sum += item
+                        }
+                        val s = sum/checkStateViewModel.avgSpeedList30.size
+                        val speed = "%.1f".format(s)
                         GetMyCarDistance("前5辆车在30秒内平均速度：","${speed}KM/H")
                         if(isVoice){
                             TTSUtil.speech("前5辆车在30秒内平均速度${speed}千米每小时")
