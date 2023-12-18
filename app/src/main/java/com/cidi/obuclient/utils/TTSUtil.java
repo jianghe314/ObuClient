@@ -32,10 +32,16 @@ public class TTSUtil {
     }
 
     public synchronized static void speech(String text,int speechMode){
+        if(textToSpeech.isSpeaking()){
+            return;
+        }
         textToSpeech.speak(text,TextToSpeech.QUEUE_FLUSH,null,"123");
     }
 
     public synchronized static void speech(String text){
+        if(textToSpeech.isSpeaking()){
+            return;
+        }
         textToSpeech.speak(text,TextToSpeech.QUEUE_FLUSH,null,"123");
     }
 

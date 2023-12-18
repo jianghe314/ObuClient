@@ -29,7 +29,15 @@ class MyApplication : Application() {
         fun getGson(): Gson{
             return Gson()
         }
+
+        fun getTvalues(): String? {
+            val sp = context.getSharedPreferences("NMKT", MODE_PRIVATE)
+            val t = sp.getString("t","5")
+            return t
+        }
     }
+
+
 
 
 

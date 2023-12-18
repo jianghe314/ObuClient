@@ -307,10 +307,14 @@ class MainActivity : ComponentActivity(){
                             if(!textValue.contains(",")){
                                 Toast.makeText(this@MainActivity,"值与值用,号隔开",Toast.LENGTH_SHORT).show()
                             }else{
-                                val str = textValue.split(",")
-                                textValue = "NKM = ${str[0]},T = ${str[1]}"
-                                saveValue(str[0],str[1])
-                                Toast.makeText(this@MainActivity,"保存成功",Toast.LENGTH_SHORT).show()
+                                if(textValue.contains("=")){
+                                    Toast.makeText(this@MainActivity,"已保存",Toast.LENGTH_SHORT).show()
+                                }else{
+                                    val str = textValue.split(",")
+                                    textValue = "NKM = ${str[0]},T = ${str[1]}"
+                                    saveValue(str[0],str[1])
+                                    Toast.makeText(this@MainActivity,"保存成功",Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
                     },
@@ -374,10 +378,10 @@ class MainActivity : ComponentActivity(){
             isVoice = it
         }
         checkStateViewModel.obuData.observe(this@MainActivity){
-            myCarSpeed = it.carSpeed.toInt()
+            myCarSpeed = it.speedTValue.toInt()
             myCarAccSpeed = it.carAccSpeed
-            myCarDis = it.AvgDisList[0]
-            myCarTime = it.AvgTimeList[0]
+            myCarDis = it.disTValue
+            myCarTime = it.timeTValue
             myCarSpeed0 = it.AvgSpeedList[0]
             avgFiveSpeeds = (it.AvgSpeedList[0] + it.AvgSpeedList[1] + it.AvgSpeedList[2] + it.AvgSpeedList[3] + it.AvgSpeedList[4])/5
             avgFiveDis = (it.AvgDisList[0] +it.AvgDisList[1] +it.AvgDisList[2] +it.AvgDisList[3] +it.AvgDisList[4])/5
@@ -403,10 +407,11 @@ class MainActivity : ComponentActivity(){
                     .background(Color.White)
                     .padding(10.dp)) {
                     if(show){
-                        SpeedContent(myCarSpeed)
+                        Log.e("PPPP","---->${myCarTime}")
                         val dis = "%.1f".format(myCarDis)
                         val time = "%.1f".format(myCarTime)
-                        GetMyCarDistance("本车间距：", "${dis}m")
+                        SpeedContent(myCarSpeed)
+                        GetMyCarDistance("本车间距：", "${dis}.m")
                         GetMyCarDistance("本车时距：", "${time}s")
                         if(isVoice){
                             TTSUtil.speech("本车间距、时距分别为${dis}米、${time}秒")
@@ -662,7 +667,7 @@ class MainActivity : ComponentActivity(){
     private fun getSaveValue(): Array<String?> {
         val sp = this@MainActivity.getSharedPreferences("NMKT", MODE_PRIVATE)
         val nkm = sp.getString("nkm","5")
-        val t = sp.getString("t","5")
+        val t = sp.getString("t","10")
         return arrayOf(nkm,t)
     }
 

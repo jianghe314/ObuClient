@@ -3,6 +3,7 @@ package com.cidi.obuclient.data
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.cidi.obuclient.MyApplication
 import com.cidi.obuclient.utils.NettyUDPSocket
 import kotlinx.coroutines.*
 import org.json.JSONException
@@ -39,15 +40,23 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
     var obuData = MutableLiveData<ReceiveData>()
 
     var avgSpeedList30 = ArrayList<Float>()
+    var speedTList = ArrayList<Float>()
+    var disTList = ArrayList<Float>()
+    var timeTList = ArrayList<Float>()
 
     private  var isWork: Boolean = false;
     companion object{
+        private var T = 5
+        private var sumSpeed = 0.0f
+        private var sumDis = 0.0f
+        private var sumTime = 0.0f
         private var currentTime = 0L
         private lateinit var byteBuffer: ByteBuffer
         private var speedLists = ArrayList<Float>()
         private var disLists = ArrayList<Float>()
         private var timeList = ArrayList<Float>()
         private lateinit var myData: ReceiveData
+
     }
 
 
@@ -61,7 +70,7 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
         NettyUDPSocket.ConnectStateListener(this)
         NettyUDPSocket.connect(IP,PORT)
         job.launch {
-            doCompute()
+            toPostValue()
         }
         job.launch {
             checkConnect()
@@ -100,24 +109,27 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
         return isLock.value
     }
 
-    private suspend fun doCompute(){
+    private suspend fun toPostValue(){
         while (true){
-            Log.e("ViewModel","---doCompute---")
+            Log.e("ViewModel","---toPostValue---")
             if(isWork){
                 //在这里进行数据赋值
-                Log.e("ViewModel","---doCompute--数据赋值--")
+                Log.e("ViewModel","---toPostValue--数据赋值--")
                 obuData.postValue(myData)
+                T = MyApplication.getTvalues()?.toInt()!!
             }
             delay(getRefresh()!!*1000L )
         }
     }
 
+
     private suspend fun checkConnect(){
         while (true){
-            if(System.currentTimeMillis() - currentTime > 3000){
+            if(System.currentTimeMillis() - currentTime > 4000){
                 //判断连接断开了
                 if(isWork){
                     isWork = false
+                    obuData.postValue(ReceiveData(0, 0.0f, 0.0f, 0, 0, 0, AvgSpeedList = speedLists, AvgDisList = disLists, AvgTimeList = timeList, 0.0f, 0.0f, 0.0f))
                     isConnect.postValue(false)
                 }
             }else{
@@ -127,9 +139,6 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
         }
     }
 
-    //msg = result?.let { String(it,StandardCharsets.UTF_8) }
-    //Log.e("UDP","Port--${getRefresh()}--${port}:${msg}")
-    //myData = MyApplication.getGson().fromJson(msg,ObuData::class.java)
 
     override fun connectSuccess(result: ByteArray?, port: Int) {
         try {
@@ -168,12 +177,30 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
                     Log.e("UDP","avgDis--->${avgDis}")
                 }
                 //解析平均时距
+                timeList.clear()
                 for(i in 1..9){
                     val avgTime = byteBuffer.short
                     timeList.add(avgTime*0.1f)
                     Log.e("UDP","avgTime--->${avgTime}")
                 }
                 Log.e("UDP","timeStemp--->${System.currentTimeMillis()}")
+                //计算T秒内的平均数据
+                if(speedTList.size == T){
+                    speedTList.removeAt(0)
+                    disTList.removeAt(0)
+                    timeTList.removeAt(0)
+                }
+                speedTList.add(speed*0.01f)
+                disTList.add(disLists.get(0))
+                timeTList.add(timeList.get(0))
+                sumSpeed = 0.0f
+                sumDis = 0.0f
+                sumTime = 0.0f
+                for (i in 0 until speedTList.size){
+                    sumSpeed += speedTList.get(i)
+                    sumDis += disTList.get(i)
+                    sumTime += timeTList.get(i)
+                }
                 myData = ReceiveData(
                     carNum = num*1,
                     carSpeed = speed*0.01f,
@@ -183,7 +210,10 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
                     times = System.currentTimeMillis() - time,
                     AvgSpeedList = speedLists,
                     AvgDisList = disLists,
-                    AvgTimeList = timeList
+                    AvgTimeList = timeList,
+                    speedTValue = sumSpeed/speedTList.size,
+                    disTValue = sumDis/disTList.size,
+                    timeTValue = sumTime/timeTList.size
                 )
                 currentTime = System.currentTimeMillis()
                 isWork = true
