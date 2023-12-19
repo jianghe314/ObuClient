@@ -378,10 +378,10 @@ class MainActivity : ComponentActivity(){
             isVoice = it
         }
         checkStateViewModel.obuData.observe(this@MainActivity){
-            myCarSpeed = it.speedTValue.toInt()
+            myCarSpeed = it.carSpeed.toInt()
             myCarAccSpeed = it.carAccSpeed
-            myCarDis = it.disTValue
-            myCarTime = it.timeTValue
+            myCarDis = it.AvgDisList[0]
+            myCarTime = it.AvgTimeList[0]
             myCarSpeed0 = it.AvgSpeedList[0]
             avgFiveSpeeds = (it.AvgSpeedList[0] + it.AvgSpeedList[1] + it.AvgSpeedList[2] + it.AvgSpeedList[3] + it.AvgSpeedList[4])/5
             avgFiveDis = (it.AvgDisList[0] +it.AvgDisList[1] +it.AvgDisList[2] +it.AvgDisList[3] +it.AvgDisList[4])/5
@@ -397,7 +397,6 @@ class MainActivity : ComponentActivity(){
             avgNSpeeds = sumNSpeed/nkmValue
             avgNDis = sumNDis/nkmValue
             avgNTime = sumNTime/nkmValue
-
         }
         when(plan){
             "A"->{
@@ -407,11 +406,10 @@ class MainActivity : ComponentActivity(){
                     .background(Color.White)
                     .padding(10.dp)) {
                     if(show){
-                        Log.e("PPPP","---->${myCarTime}")
                         val dis = "%.1f".format(myCarDis)
                         val time = "%.1f".format(myCarTime)
                         SpeedContent(myCarSpeed)
-                        GetMyCarDistance("本车间距：", "${dis}.m")
+                        GetMyCarDistance("本车间距：", "${dis}m")
                         GetMyCarDistance("本车时距：", "${time}s")
                         if(isVoice){
                             TTSUtil.speech("本车间距、时距分别为${dis}米、${time}秒")

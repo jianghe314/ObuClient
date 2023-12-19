@@ -129,7 +129,7 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
                 //判断连接断开了
                 if(isWork){
                     isWork = false
-                    obuData.postValue(ReceiveData(0, 0.0f, 0.0f, 0, 0, 0, AvgSpeedList = speedLists, AvgDisList = disLists, AvgTimeList = timeList, 0.0f, 0.0f, 0.0f))
+                    obuData.postValue(ReceiveData(0, 0.0f, 0.0f, 0, 0, 0, AvgSpeedList = speedLists, AvgDisList = disLists, AvgTimeList = timeList))
                     isConnect.postValue(false)
                 }
             }else{
@@ -184,23 +184,6 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
                     Log.e("UDP","avgTime--->${avgTime}")
                 }
                 Log.e("UDP","timeStemp--->${System.currentTimeMillis()}")
-                //计算T秒内的平均数据
-                if(speedTList.size == T){
-                    speedTList.removeAt(0)
-                    disTList.removeAt(0)
-                    timeTList.removeAt(0)
-                }
-                speedTList.add(speed*0.01f)
-                disTList.add(disLists.get(0))
-                timeTList.add(timeList.get(0))
-                sumSpeed = 0.0f
-                sumDis = 0.0f
-                sumTime = 0.0f
-                for (i in 0 until speedTList.size){
-                    sumSpeed += speedTList.get(i)
-                    sumDis += disTList.get(i)
-                    sumTime += timeTList.get(i)
-                }
                 myData = ReceiveData(
                     carNum = num*1,
                     carSpeed = speed*0.01f,
@@ -210,10 +193,7 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
                     times = System.currentTimeMillis() - time,
                     AvgSpeedList = speedLists,
                     AvgDisList = disLists,
-                    AvgTimeList = timeList,
-                    speedTValue = sumSpeed/speedTList.size,
-                    disTValue = sumDis/disTList.size,
-                    timeTValue = sumTime/timeTList.size
+                    AvgTimeList = timeList
                 )
                 currentTime = System.currentTimeMillis()
                 isWork = true
@@ -225,11 +205,6 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
         }
 
     }
-
-
-
-
-
 
 
 }
