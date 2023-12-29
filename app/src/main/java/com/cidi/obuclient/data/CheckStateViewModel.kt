@@ -22,7 +22,7 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
     var isConnect = MutableLiveData<Boolean>(true)
 
     //方案选择
-    var plan = MutableLiveData<String>("")
+    var plan = MutableLiveData<String>("0")
 
     //是否显示
     var isShow = MutableLiveData<Boolean>(true)
@@ -55,6 +55,7 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
         private var speedLists = ArrayList<Float>()
         private var disLists = ArrayList<Float>()
         private var timeList = ArrayList<Float>()
+        private var deviceIdList = ArrayList<String>()
         private lateinit var myData: ReceiveData
 
     }
@@ -129,7 +130,19 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
                 //判断连接断开了
                 if(isWork){
                     isWork = false
-                    obuData.postValue(ReceiveData(0, 0.0f, 0.0f, 0, 0, 0, AvgSpeedList = speedLists, AvgDisList = disLists, AvgTimeList = timeList, 0.0f, 0.0f, 0.0f))
+                    obuData.postValue(ReceiveData(0,
+                        0.0f,
+                        0.0f,
+                        0,
+                        0,
+                        0,
+                        AvgSpeedList = speedLists,
+                        AvgDisList = disLists,
+                        AvgTimeList = timeList,
+                        DeviceIdList = deviceIdList,
+                        0.0f,
+                        0.0f,
+                        0.0f))
                     isConnect.postValue(false)
                 }
             }else{
@@ -157,7 +170,7 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
                 val gpsState = byteBuffer.get()
                 Log.e("UDP","gpsState--->${gpsState}")
                 //车辆ID
-                val carId = byteBuffer.getInt()
+                val carId = byteBuffer.int
                 Log.e("UDP","carId--->${carId}")
                 //时间戳
                 val time = byteBuffer.long
@@ -182,6 +195,14 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
                     val avgTime = byteBuffer.short
                     timeList.add(avgTime*0.1f)
                     Log.e("UDP","avgTime--->${avgTime}")
+                }
+                //解析ID列表
+                deviceIdList.clear()
+                // TODO: 解析ID列表
+                for(i in 1..9){
+                    val deviceId = byteBuffer.int
+                    Log.e("UDP","deviceId--->${deviceId}")
+                    deviceIdList.add(deviceId.toString())
                 }
                 Log.e("UDP","timeStemp--->${System.currentTimeMillis()}")
                 //计算T秒内的平均数据
@@ -211,6 +232,7 @@ class CheckStateViewModel : ViewModel(),NettyUDPSocket.ConnectState{
                     AvgSpeedList = speedLists,
                     AvgDisList = disLists,
                     AvgTimeList = timeList,
+                    DeviceIdList = deviceIdList,
                     speedTValue = sumSpeed/speedTList.size,
                     disTValue = sumDis/disTList.size,
                     timeTValue = sumTime/timeTList.size

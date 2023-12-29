@@ -23,6 +23,8 @@ data class ReceiveData(
     var AvgDisList: List<Float>,
     //平均时距 18字节
     var AvgTimeList: List<Float>,
+    //ID列表
+    var DeviceIdList: List<String>,
     //在T秒内的平均速度、平均间距、平均时距
     var speedTValue: Float = 0.0f,
     var disTValue: Float = 0.0f,

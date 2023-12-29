@@ -1,12 +1,15 @@
 package com.cidi.obuclient
 
 
+import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.fadeIn
@@ -14,15 +17,19 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.*
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -34,6 +41,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModelProvider
 import com.cidi.obuclient.data.CheckStateViewModel
 import com.cidi.obuclient.ui.theme.*
@@ -42,6 +50,7 @@ import com.cidi.obuclient.utils.TTSUtil
 import com.cidi.obuclient.utils.ThreadPoolUtils
 import com.cidi.obuclient.view.CustomEdit
 import com.cidi.obuclient.view.SpeederMeter
+import kotlinx.coroutines.delay
 import java.util.Timer
 import kotlin.concurrent.timerTask
 import kotlin.system.exitProcess
@@ -83,20 +92,82 @@ class MainActivity : ComponentActivity(){
     fun Title(checkStateViewModel: CheckStateViewModel){
         var deviceId by remember{ mutableStateOf("123456789") }
         var delayTime by remember{ mutableStateOf(999) }
+        var showDialog = remember { mutableStateOf(false) }
         checkStateViewModel.obuData.observe(this@MainActivity){
             deviceId = it.carId.toString()
             delayTime = it.times.toInt()
-            Log.e("delayTime","---->${delayTime}")
+        }
+        ShowDeviceList(showDialog,checkStateViewModel)
+        var paint: Painter = if(!showDialog.value){
+            painterResource(id = R.drawable.arrow_down)
+        }else{
+            painterResource(id = R.drawable.arrow_up)
         }
         Row(modifier = Modifier
             .fillMaxWidth()
-            .height(40.dp)
+            .height(50.dp)
             .background(title_color)
-            .padding(10.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(modifier = Modifier
-                .align(Alignment.CenterVertically)
-                .width(200.dp), text = "当前设备:${deviceId}",color = Color.White, fontSize = 15.sp, overflow = TextOverflow.Clip)
-            Text(modifier = Modifier.align(Alignment.CenterVertically), text = "延迟:${delayTime}ms", color = Color.White, fontSize = 15.sp)
+            .padding(start = 12.dp, end = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            Column(modifier = Modifier
+                .width(200.dp)
+                .wrapContentHeight()) {
+                Row(modifier = Modifier
+                    .wrapContentHeight()
+                    .width(200.dp)) {
+                    Text(modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .wrapContentWidth(), text = "当前设备:${deviceId}",color = Color.White, fontSize = 15.sp, overflow = TextOverflow.Visible)
+                    Image(painter = paint, contentDescription = "",modifier = Modifier.clickable {
+                        //显示设备列表
+                        if(!checkStateViewModel.isLock()!!){
+                            showDialog.value = !showDialog.value
+                        }
+                    })
+
+                }
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight().padding(top = 3.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+
+                    Text(modifier = Modifier.align(Alignment.CenterVertically), text = "延迟:${delayTime}ms", color = Color.White, fontSize = 15.sp)
+                }
+
+            }
+
+            Row(modifier = Modifier
+                .width(60.dp)
+                .height(50.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+
+                Image(modifier = Modifier.width(50.dp).height(40.dp).clickable { startActivity(Intent(this@MainActivity,FileActivity::class.java)) }, painter = painterResource(id = R.drawable.file), contentDescription = "setting")
+            }
+        }
+
+
+    }
+
+
+    @Composable
+    fun ShowDeviceList(isShow: MutableState<Boolean>,checkStateViewModel: CheckStateViewModel){
+        if(isShow.value){
+            AlertDialog(
+                onDismissRequest = { isShow.value = false },
+                confirmButton = { Text(text = getString(R.string.sure), fontSize = 14.sp, modifier = Modifier.clickable { isShow.value = false }) },
+                shape = RoundedCornerShape(20.0f),
+                title = { Text(text = getString(R.string.device_list), fontSize = 18.sp)},
+                text = {
+                    LazyColumn(modifier = Modifier.wrapContentHeight(),content = {
+                        val deviceList = checkStateViewModel.obuData.value?.DeviceIdList
+                        if (deviceList != null) {
+                            items(deviceList.size){
+                                val id = deviceList[it]
+                                if(id != "0"){
+                                    Text(text = "设备ID：$id")
+                                }
+                            }
+                        }
+                    })
+                }
+            )
         }
     }
     
@@ -181,7 +252,7 @@ class MainActivity : ComponentActivity(){
                 getString(R.string.rate_6),getString(R.string.rate_7),getString(R.string.rate_8))
         var itemChoiceText by remember { mutableStateOf( menuItems[0]) }
         var textWidthSize by remember { mutableStateOf( Size.Zero ) }
-        var textValue by remember { mutableStateOf("N=K=M=${getSaveValue()[0]},T=${getSaveValue()[1]}") }
+        var textValue by remember { mutableStateOf("NKM=${getSaveValue()[0]},T=${getSaveValue()[1]}") }
 
         Column(modifier = Modifier
             .background(title_color)
@@ -364,8 +435,6 @@ class MainActivity : ComponentActivity(){
         //前N台车平均速度
         var avgNSpeeds by remember { mutableStateOf(0.0f) }
 
-        //前5台车在30S的平均速度
-        var avgFiveSpeedsFor_30 by remember { mutableStateOf(0.0f) }
         checkStateViewModel.plan.observe(this@MainActivity){
             if(it != ""){
                 plan = it.substring(0,1)
@@ -383,39 +452,44 @@ class MainActivity : ComponentActivity(){
             myCarDis = it.disTValue
             myCarTime = it.timeTValue
             myCarSpeed0 = it.AvgSpeedList[0]
-            avgFiveSpeeds = (it.AvgSpeedList[0] + it.AvgSpeedList[1] + it.AvgSpeedList[2] + it.AvgSpeedList[3] + it.AvgSpeedList[4])/5
-            avgFiveDis = (it.AvgDisList[0] +it.AvgDisList[1] +it.AvgDisList[2] +it.AvgDisList[3] +it.AvgDisList[4])/5
+            avgFiveSpeeds = it.AvgSpeedList[4]
+            avgFiveDis = it.AvgDisList[4]
             val nkmValue = nkm?.toInt()!!
-            var sumNSpeed = 0.0f
-            var sumNDis = 0.0f
-            var sumNTime = 0.0f
-            for (i in 0..nkmValue){
-                sumNSpeed += it.AvgSpeedList[i]
-                sumNDis += it.AvgDisList[i]
-                sumNTime += it.AvgTimeList[i]
-            }
-            avgNSpeeds = sumNSpeed/nkmValue
-            avgNDis = sumNDis/nkmValue
-            avgNTime = sumNTime/nkmValue
+            avgNSpeeds = it.AvgSpeedList[nkmValue]
+            avgNDis = it.AvgDisList[nkmValue]
+            avgNTime = it.AvgTimeList[nkmValue]
 
         }
         when(plan){
+            "0"->{
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .background(Color.White)
+                    .padding(10.dp)) {
+                    Box(modifier = Modifier.fillMaxSize()){
+                        Text(text = getString(R.string.please_choice),
+                            modifier = Modifier.align(Alignment.Center),
+                            fontSize = 26.sp,
+                            color = Color.LightGray)
+                    }
+                }
+            }
             "A"->{
+                val dis = "%.1f".format(myCarDis)
+                val time = "%.1f".format(myCarTime)
+                if(isVoice){
+                    TTSUtil.speech("本车间距、时距分别为${dis}米、${time}秒")
+                }
                 Column(modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .background(Color.White)
                     .padding(10.dp)) {
                     if(show){
-                        Log.e("PPPP","---->${myCarTime}")
-                        val dis = "%.1f".format(myCarDis)
-                        val time = "%.1f".format(myCarTime)
                         SpeedContent(myCarSpeed)
                         GetMyCarDistance("本车间距：", "${dis}.m")
                         GetMyCarDistance("本车时距：", "${time}s")
-                        if(isVoice){
-                            TTSUtil.speech("本车间距、时距分别为${dis}米、${time}秒")
-                        }
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){
                             Text(text = getString(R.string.hide),
@@ -427,17 +501,17 @@ class MainActivity : ComponentActivity(){
                 }
             }
             "B"->{
+                val speed = "%.1f".format(avgFiveSpeeds)
+                if(isVoice){
+                    TTSUtil.speech("前5辆车平均速度${speed}千米每小时")
+                }
                 Column(modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .background(Color.White)
                     .padding(10.dp)) {
                     if(show){
-                        val speed = "%.1f".format(avgFiveSpeeds)
-                        GetMyCarDistance("前5辆车平均速度：","${speed}KM/H")
-                        if(isVoice){
-                            TTSUtil.speech("前5辆车平均速度${speed}千米每小时")
-                        }
+                        GetMyCarDistance("前5辆车平均速度：","${speed}km/h")
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){
                             Text(text = getString(R.string.hide),
@@ -450,6 +524,11 @@ class MainActivity : ComponentActivity(){
                 }
             }
             "C"->{
+                val advise = getDirverAdvise(myCarSpeed,myCarAccSpeed,myCarTime,myCarSpeed0)
+                val speed = "%.1f".format(avgFiveSpeeds)
+                if(isVoice){
+                    TTSUtil.speech("前5辆车平均速度${speed}千米每小时、行驶建议${advise}")
+                }
                 Column(modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
@@ -457,13 +536,8 @@ class MainActivity : ComponentActivity(){
                     .padding(10.dp)) {
                     if(show){
                         SpeedContent(myCarSpeed)
-                        val speed = "%.1f".format(avgFiveSpeeds)
-                        GetMyCarDistance("前5辆车平均速度：","${speed}KM/H")
-                        val advise = getDirverAdvise(myCarSpeed,myCarAccSpeed,myCarTime,myCarSpeed0)
-                        DirverAdvise(advise)
-                        if(isVoice){
-                            TTSUtil.speech("前5辆车平均速度${speed}千米每小时、行驶建议${advise}")
-                        }
+                        GetMyCarDistance("前5辆车平均速度：","${speed}km/h")
+                        DriveAdvise(advise,myCarDis)
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){
                             Text(text = getString(R.string.hide),
@@ -477,19 +551,19 @@ class MainActivity : ComponentActivity(){
                 }
             }
             "D"->{
+                val speed = "%.1f".format(avgFiveSpeeds)
+                val dis = "%.1f".format(avgFiveDis)
+                if(isVoice){
+                    TTSUtil.speech("前5辆车平均车速、平均间距分别为${speed}千米每小时、${dis}米")
+                }
                 Column(modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .background(Color.White)
                     .padding(10.dp)) {
                     if(show){
-                        val speed = "%.1f".format(avgFiveSpeeds)
-                        val dis = "%.1f".format(avgFiveDis)
-                        GetMyCarDistance("前5辆车平均速度：","${speed}KM/H")
+                        GetMyCarDistance("前5辆车平均速度：","${speed}km/h")
                         GetMyCarDistance("前5辆车平均间距：","${dis}m")
-                        if(isVoice){
-                            TTSUtil.speech("前5辆车平均车速、平均间距分别为${speed}千米每小时、${dis}米")
-                        }
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){
                             Text(text = getString(R.string.hide),
@@ -501,6 +575,13 @@ class MainActivity : ComponentActivity(){
                 }
             }
             "E"->{
+                val nSpeed = "%.1f".format(avgNSpeeds)
+                val nDis = "%.1f".format(avgNDis)
+                val nTime = "%.1f".format(avgNTime)
+                val advise = getDirverAdvise(myCarSpeed,myCarAccSpeed,myCarTime,myCarSpeed0)
+                if(isVoice){
+                    TTSUtil.speech("前${nkm}辆车平均速度、间距、时距分别为${nSpeed}千米每小时、${nDis}米、${nTime}秒、行驶建议${advise}")
+                }
                 Column(modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
@@ -508,17 +589,10 @@ class MainActivity : ComponentActivity(){
                     .padding(10.dp)) {
                     if(show){
                         SpeedContent(myCarSpeed)
-                        val nSpeed = "%.1f".format(avgNSpeeds)
-                        val nDis = "%.1f".format(avgNDis)
-                        val nTime = "%.1f".format(avgNTime)
-                        GetMyCarDistance("前N辆车平均速度：","${nSpeed}KM/H")
+                        GetMyCarDistance("前N辆车平均速度：","${nSpeed}km/h")
                         GetMyCarDistance("前M辆车平均间距：","${nDis}m")
                         GetMyCarDistance("前K辆车平均时距：","${nTime}s")
-                        val advise = getDirverAdvise(myCarSpeed,myCarAccSpeed,myCarTime,myCarSpeed0)
-                        DirverAdvise(advise)
-                        if(isVoice){
-                            TTSUtil.speech("前${nkm}辆车平均速度、间距、时距分别为${nSpeed}千米每小时、${nDis}米、${nTime}秒、行驶建议${advise}")
-                        }
+                        DriveAdvise(advise,myCarDis)
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){
                             Text(text = getString(R.string.hide),
@@ -530,26 +604,26 @@ class MainActivity : ComponentActivity(){
                 }
             }
             "F"->{
+                if(checkStateViewModel.avgSpeedList30.size == 30){
+                    checkStateViewModel.avgSpeedList30.removeAt(0)
+                }
+                checkStateViewModel.avgSpeedList30.add(avgFiveSpeeds)
+                var sum = 0.0f
+                for(item in checkStateViewModel.avgSpeedList30){
+                    sum += item
+                }
+                val s = sum/checkStateViewModel.avgSpeedList30.size
+                val speed = "%.1f".format(s)
+                if(isVoice){
+                    TTSUtil.speech("前5辆车在30秒内平均速度${speed}千米每小时")
+                }
                 Column(modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .background(Color.White)
                     .padding(10.dp)) {
                     if(show){
-                        if(checkStateViewModel.avgSpeedList30.size == 30){
-                            checkStateViewModel.avgSpeedList30.removeAt(0)
-                        }
-                        checkStateViewModel.avgSpeedList30.add(avgFiveSpeeds)
-                        var sum = 0.0f
-                        for(item in checkStateViewModel.avgSpeedList30){
-                            sum += item
-                        }
-                        val s = sum/checkStateViewModel.avgSpeedList30.size
-                        val speed = "%.1f".format(s)
-                        GetMyCarDistance("前5辆车在30秒内平均速度：","${speed}KM/H")
-                        if(isVoice){
-                            TTSUtil.speech("前5辆车在30秒内平均速度${speed}千米每小时")
-                        }
+                        GetMyCarDistance("前5辆车在30秒内平均速度：","${speed}km/h")
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){
                             Text(text = getString(R.string.hide),
@@ -588,11 +662,11 @@ class MainActivity : ComponentActivity(){
             .padding(top = 10.dp)) {
             Text(
                 text = buildAnnotatedString {
-                        withStyle(style = SpanStyle(color = Color.Gray)){
+                        withStyle(style = SpanStyle(color = Color.Gray, fontSize = 18.sp)){
                             append(name)
                         }
-                        withStyle(style = SpanStyle(color = Color.Red, fontSize = 20.sp,fontWeight = FontWeight(1000))){
-                            append("$values")
+                        withStyle(style = SpanStyle(color = Color.Red, fontSize = 22.sp,fontWeight = FontWeight(1000))){
+                            append(values)
 
                         }
                 }
@@ -602,10 +676,16 @@ class MainActivity : ComponentActivity(){
 
     //行驶建议
     @Composable
-    fun DirverAdvise(values: String){
+    fun DriveAdvise(values: String,dis: Float){
         val isLaunch: Boolean
         val adviseColor: Color
-        var timer = Timer()
+        var per: Long = 300L 
+        if(dis > 15){
+            per = 500L
+        }else if(dis <10){
+            per = 250L
+        }
+        val timer = Timer()
         var isVisible by remember { mutableStateOf(true) }
         if(values == "请加速"){
             isLaunch = false
@@ -621,7 +701,7 @@ class MainActivity : ComponentActivity(){
             if(isLaunch){
                 timer.scheduleAtFixedRate(timerTask{
                     isVisible = !isVisible
-                },0,500L)
+                },0,per)
             }else{
                 timer.cancel()
             }
@@ -638,13 +718,13 @@ class MainActivity : ComponentActivity(){
                 }
             )
             AnimatedVisibility(visible = isVisible, enter = fadeIn(), exit = fadeOut()) {
-               Text(text = values,color = adviseColor, fontSize = 20.sp,fontWeight = FontWeight(1000))
+               Text(text = values,color = adviseColor, fontSize = 26.sp,fontWeight = FontWeight(1000))
             }
         }
     }
 
     private fun getDirverAdvise(speed:Int,accSpeed:Float,avgSpeed0:Float,avgDis0:Float): String{
-        val result = 0.3*(avgDis0 - speed*1.5 - 7)+0.3*avgSpeed0
+        val result = 0.3*(avgDis0 - speed*1.5 - 7)+0.3*(speed-avgSpeed0)
         val values =  if(result > accSpeed + 0.1){
             "请加速"
         }else if(result <= accSpeed - 0.1){
@@ -661,7 +741,7 @@ class MainActivity : ComponentActivity(){
         val edit = sp.edit()
         edit.putString("nkm",nkm)
         edit.putString("t",t)
-        edit.commit()
+        edit.apply()
     }
 
     private fun getSaveValue(): Array<String?> {

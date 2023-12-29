@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ObuClient</string>
+    <string name="app_name">OBUClient</string>
     <string name="choice_plan">方案:</string>
     <string name="plan_1">A:自车速度+本车间距+本车时距</string>
     <string name="plan_2">B:前5辆车平均速度</string>
@@ -9,6 +9,9 @@
     <string name="plan_6">F:前5辆车在30秒内的平均速度</string>
     <string name="show">显示</string>
     <string name="hide">已隐藏</string>
+    <string name="device_list">设备通信列表</string>
+    <string name="sure">确认</string>
+    <string name="please_choice">请选择方案</string>
     <string name="refresh_rate">刷新频率</string>
     <string name="vioce">语音</string>
     <string name="rate_0">0Hz</string>
@@ -30,4 +33,9 @@
     <string name="carAveDistance_5">前5辆车平均间距：</string>
     <string name="carAveTiemDiff_k">前K辆车平均时距：</string>
     <string name="carAveSpeed_30">前5辆车在30秒内平均速度：</string>
+    <string name="title_activity_file">FileActivity</string>
+    <string name="file_mang">文件管理</string>
+    <string name="file_choice">文件操作</string>
+    <string name="file_delete">删除</string>
+    <string name="file_download">下载</string>
 </resources>
