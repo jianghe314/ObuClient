@@ -130,6 +130,7 @@ class FileActivity: ComponentActivity() {
         var list by remember { mutableStateOf(ArrayList<FileData>()) }
         var showDialog = remember { mutableStateOf(false) }
         var itemFile by remember { mutableStateOf(FileData("","")) }
+        var itemIndex by remember { mutableStateOf(0) }
         fun refresh() = refreshScope.launch(Dispatchers.IO) {
             refreshing = true
             fileViewModel.getFTPFileLists()
@@ -140,7 +141,7 @@ class FileActivity: ComponentActivity() {
             list = it
         }
         fileViewModel.createFileDir()
-        ShowDialog(itemFile = itemFile, isShow =showDialog ,fileViewModel)
+        ShowDialog(itemIndex = itemIndex ,itemFile = itemFile, isShow =showDialog ,fileViewModel)
         Box(Modifier.pullRefresh(state)) {
             LazyColumn(
                 Modifier
@@ -155,6 +156,7 @@ class FileActivity: ComponentActivity() {
                             //点击下载删除
                             showDialog.value = true
                             itemFile = list[it]
+                            itemIndex = it
                         }
                         .height(35.dp), color = Color.Gray, text = list[it].fileName, fontSize = 16.sp)
                     Spacer(modifier = Modifier
@@ -172,7 +174,7 @@ class FileActivity: ComponentActivity() {
     }
 
     @Composable
-    fun ShowDialog(itemFile: FileData,isShow: MutableState<Boolean>,fileViewModel: FileViewModel){
+    fun ShowDialog(itemIndex: Int,itemFile:FileData, isShow: MutableState<Boolean>,fileViewModel: FileViewModel){
         if(isShow.value){
             AlertDialog(
                 onDismissRequest = { isShow.value = false },
@@ -182,23 +184,26 @@ class FileActivity: ComponentActivity() {
                 text = {
                     Column(modifier = Modifier
                         .width(200.dp)
-                        .height(80.dp)) {
+                        .height(60.dp)) {
                         Text( text = getString(R.string.file_download), fontSize = 18.sp, modifier = Modifier
-                            .padding(top = 15.dp, start = 15.dp)
+                            .padding(top = 35.dp, start = 15.dp)
                             .fillMaxWidth()
                             .clickable {
                                 //权限请求
-                                fileViewModel.downLoadFile(itemFile.fileName)
+                                fileViewModel.downLoadFile(itemIndex,itemFile.fileName)
+                                MyApplication.MyToast("下载中，请稍后")
                                 isShow.value = false
                             })
+                        /*
                         Text(text = getString(R.string.file_delete),fontSize = 18.sp, modifier = Modifier
                             .padding(top = 15.dp, start = 15.dp)
                             .fillMaxWidth()
                             .clickable {
-                                fileViewModel.deleteFile(itemFile.fileName)
+                                fileViewModel.deleteFile(itemIndex,itemFile.fileName)
                                 isShow.value = false
-                                fileViewModel.refreshData()
                             })
+
+                         */
                     }
                 }
             )

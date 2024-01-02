@@ -488,7 +488,7 @@ class MainActivity : ComponentActivity(){
                     .padding(10.dp)) {
                     if(show){
                         SpeedContent(myCarSpeed)
-                        GetMyCarDistance("本车间距：", "${dis}.m")
+                        GetMyCarDistance("本车间距：", "${dis}m")
                         GetMyCarDistance("本车时距：", "${time}s")
                     }else{
                         Box(modifier = Modifier.fillMaxSize()){

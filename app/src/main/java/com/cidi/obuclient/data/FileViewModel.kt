@@ -18,8 +18,8 @@ import java.io.File
  *QQ:1309873105
  */
 class FileViewModel: ViewModel() {
-    private val ftpName = "ftp"
-    private val ftpPsd = "ftp"
+    private val ftpName = "user1"
+    private val ftpPsd = "123"
     private val IP = "192.168.2.10"
     private val port = 2121
 
@@ -58,14 +58,15 @@ class FileViewModel: ViewModel() {
          }
     }
 
-    fun refreshData(){
+    fun refreshData(item: Int){
         coroutineScope.launch {
+            Log.e("FTP","---->刷新")
             getFTPFileLists()
         }
     }
 
     //下载选中的文件
-    fun downLoadFile(fileName: String){
+    fun downLoadFile(item: Int,fileName: String){
         //在这里申请权限
         coroutineScope.launch {
             val path = MyApplication.getPath()
@@ -81,9 +82,9 @@ class FileViewModel: ViewModel() {
     }
 
     //删除文件
-    fun deleteFile(fileName: String){
+    fun deleteFile(item: Int,fileName: String){
         coroutineScope.launch {
-            val isSuccess = deletaFTPfile(fileName,"/$fileName")
+            val isSuccess = FTPUtils.getInstance().deleteFiles(ftpName,ftpPsd,IP,port,fileName,"")
             withContext(Dispatchers.Main){
                 if(isSuccess){
                     MyApplication.MyToast("删除成功")
@@ -93,10 +94,6 @@ class FileViewModel: ViewModel() {
             }
         }
 
-    }
-
-    private suspend fun deletaFTPfile(fileName: String,filePath: String): Boolean{
-        return  FTPUtils.getInstance().deleteFiles(ftpName,ftpName,IP,port,fileName,filePath)
     }
 
 

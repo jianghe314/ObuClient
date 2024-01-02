@@ -96,7 +96,7 @@ public class FTPUtils {
          FTPFile[] ftpFiles = null;
          try {
              boolean isLogin = initLogin(name,psd,serverAddress,port);
-             Log.e("pppppppp","---->"+isLogin);
+             Log.e("FTP","getFilesInfo---->"+isLogin);
              if(isLogin){
                  ftpClient.changeWorkingDirectory(downFilesDirectory);
                  ftpFiles = ftpClient.listFiles();
@@ -124,6 +124,7 @@ public class FTPUtils {
          OutputStream outputStream = null;
          try {
              boolean isLogin =initLogin(name,psd,serverAddress,port);
+             Log.e("FTP","downLoadFiles---->"+isLogin);
              if(isLogin){
                  ftpClient.changeWorkingDirectory("/");
                  FTPFile[] ftpFiles = ftpClient.listFiles();
@@ -176,6 +177,7 @@ public class FTPUtils {
      public boolean deleteFiles(String name, String psd, String serverAddress, int port, String deleteFileName, String deleteFilePath){
          try {
              boolean isLogin = initLogin(name,psd,serverAddress,port);
+             Log.e("FTP","deleteFiles---->"+isLogin);
              if(isLogin){
                  FTPFile[] ftpFiles = ftpClient.listFiles();
                  for (int i = 0; i < ftpFiles.length; i++) {
@@ -203,16 +205,13 @@ public class FTPUtils {
          try {
              ftpClient.connect(serverAddress,port);
              int replyCode = ftpClient.getReplyCode();
-             Log.e("loginCode","---->"+replyCode);
+             Log.e("FTP","initLogin code:---->code"+replyCode);
              if(FTPReply.isPositiveCompletion(replyCode)){
                  isLogin =  ftpClient.login(name,psd);
                  //ftpClient.enterLocalActiveMode();
-                 Log.e("kkkk","--->"+isLogin);
+                 Log.e("FTP","initLogin---->"+isLogin);
              }
-             if(isLogin){
-                 return true;
-             }
-             return false;
+             return isLogin;
          } catch (IOException e) {
              e.printStackTrace();
          }
